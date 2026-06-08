@@ -15,8 +15,8 @@ jobs:
     - name: Upload via FTP ke cPanel
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        server: ftp.pgrikotamobagu.my.id
-        username: pgrikota
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         port: 21
         protocol: ftps
