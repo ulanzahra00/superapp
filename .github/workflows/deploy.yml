@@ -20,4 +20,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ vars.FTP_PORT }}
         protocol: ftps
-        server-dir: ./superapp
+        server-dir: ./public_html/superapp/
