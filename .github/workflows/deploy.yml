@@ -21,3 +21,4 @@ jobs:
         port: 22
         local_path: './*'
         remote_path: '/public_html/deploypengumuman'
+        sftp_only: true
