@@ -14,7 +14,7 @@ jobs:
     - name: Jalankan SFTP Upload Bersih
       uses: wlixcc/SFTP-Deploy-Action@v1.2.4
       with:
-        host: ${{ secrets.FTP_SERVER }}
+        server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.FTP_PORT }}
