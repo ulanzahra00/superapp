@@ -12,13 +12,38 @@ jobs:
     - name: Ambil kode dari GitHub
       uses: actions/checkout@v4
 
-    - name: Upload folder public via FTP
+    - name: Siapkan PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        tools: composer
+
+    - name: Install dependency Laravel
+      run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+    - name: Upload Laravel runtime via FTP
       run: |
         set -e
-        find public -type f | while read -r file; do
-          remote_path="${file#public/}"
+
+        upload_file() {
+          local file="$1"
+          local remote_path="$2"
           curl --fail --show-error --ftp-create-dirs \
             --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             --upload-file "$file" \
             "ftp://${{ secrets.FTP_SERVER }}:21/public_html/superapp/$remote_path"
+        }
+
+        find public -type f | while read -r file; do
+          upload_file "$file" "${file#public/}"
+        done
+
+        for path in app bootstrap config database/migrations database/seeders resources routes storage vendor; do
+          find "$path" -type f | while read -r file; do
+            upload_file "$file" "$file"
+          done
+        done
+
+        for file in artisan composer.json composer.lock; do
+          upload_file "$file" "$file"
         done
