@@ -235,64 +235,39 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $sanctionCases = [
-            [
-                'student' => $students[0],
-                'total' => -20,
-                'type' => 'Peringatan 1',
-                'violation' => 'Bolos',
-                'point' => -20,
-                'description' => 'Siswa tidak hadir pada jam pelajaran tanpa keterangan dari orang tua atau wali kelas.',
-                'task' => 'Yang harus dilakukan: membuat surat pernyataan, meminta paraf wali kelas, dan mengikuti pembinaan disiplin 15 menit sebelum pelajaran.',
-            ],
-            [
-                'student' => $students[4],
-                'total' => -50,
-                'type' => 'Panggilan orang tua',
-                'violation' => 'Terlambat berulang dan tidak lengkap atribut',
-                'point' => -50,
-                'description' => 'Siswa beberapa kali datang terlambat dan tidak memakai atribut sekolah secara lengkap.',
-                'task' => 'Yang harus dilakukan: hadir bersama orang tua/wali untuk konseling, menyusun jadwal belajar, dan melapor ke wali kelas selama 5 hari.',
-            ],
-            [
-                'student' => $students[10],
-                'total' => -20,
-                'type' => 'Peringatan 1',
-                'violation' => 'Tidak mengerjakan tugas kelas',
-                'point' => -20,
-                'description' => 'Siswa tidak menyelesaikan tugas kelas sesuai batas waktu yang sudah diberikan guru.',
-                'task' => 'Yang harus dilakukan: menyelesaikan tugas tertunda, menulis refleksi tanggung jawab, dan menyerahkan laporan ke guru mapel.',
-            ],
-            [
-                'student' => $students[16],
-                'total' => -100,
-                'type' => 'Skorsing',
-                'violation' => 'Pelanggaran disiplin berat',
-                'point' => -100,
-                'description' => 'Siswa melakukan pelanggaran disiplin berat yang membutuhkan pembinaan khusus dari sekolah.',
-                'task' => 'Yang harus dilakukan: skorsing pembinaan 2 hari, tugas belajar mandiri terpantau, dan sesi konseling sebelum kembali ke kelas.',
-            ],
-            [
-                'student' => $students[18],
-                'total' => -20,
-                'type' => 'Peringatan 1',
-                'violation' => 'Tidak mengikuti upacara',
-                'point' => -20,
-                'description' => 'Siswa tidak mengikuti kegiatan upacara sekolah tanpa alasan yang dapat dipertanggungjawabkan.',
-                'task' => 'Yang harus dilakukan: mengikuti pembinaan kedisiplinan, membantu piket kelas, dan membuat rangkuman tata tertib sekolah.',
-            ],
+            ['student' => $students[0], 'total' => -20, 'type' => 'Peringatan 1', 'category' => 'Disiplin', 'violation' => 'Bolos jam pelajaran', 'point' => -20, 'description' => 'Siswa meninggalkan jam pelajaran tanpa izin guru piket atau wali kelas.', 'task' => 'Membuat surat pernyataan, meminta paraf wali kelas, dan mengikuti pembinaan disiplin sebelum pelajaran dimulai.'],
+            ['student' => $students[1], 'total' => -5, 'type' => 'Teguran lisan', 'category' => 'Disiplin', 'violation' => 'Terlambat masuk kelas', 'point' => -5, 'description' => 'Siswa datang setelah bel masuk pelajaran pertama tanpa alasan yang jelas.', 'task' => 'Mencatat alasan keterlambatan di buku piket dan hadir 10 menit lebih awal selama tiga hari.'],
+            ['student' => $students[2], 'total' => -10, 'type' => 'Peringatan ringan', 'category' => 'Disiplin', 'violation' => 'Seragam tidak lengkap', 'point' => -10, 'description' => 'Siswa tidak memakai atribut sekolah sesuai ketentuan harian.', 'task' => 'Melengkapi atribut sekolah dan melapor ke wali kelas pada pemeriksaan berikutnya.'],
+            ['student' => $students[3], 'total' => -15, 'type' => 'Pembinaan wali kelas', 'category' => 'Tanggung Jawab', 'violation' => 'Tidak mengerjakan tugas', 'point' => -15, 'description' => 'Siswa tidak mengumpulkan tugas mata pelajaran sesuai tenggat waktu.', 'task' => 'Menyelesaikan tugas tertunda dan menulis refleksi tanggung jawab belajar.'],
+            ['student' => $students[4], 'total' => -25, 'type' => 'Peringatan 1', 'category' => 'Disiplin', 'violation' => 'Membuat gaduh di kelas', 'point' => -25, 'description' => 'Siswa mengganggu proses pembelajaran sehingga kelas tidak kondusif.', 'task' => 'Mengikuti pembinaan wali kelas dan membantu menyiapkan kelas selama tiga hari.'],
+            ['student' => $students[5], 'total' => -10, 'type' => 'Peringatan ringan', 'category' => 'Tanggung Jawab', 'violation' => 'Tidak membawa buku pelajaran', 'point' => -10, 'description' => 'Siswa tidak membawa buku atau perlengkapan utama saat pembelajaran.', 'task' => 'Membuat daftar perlengkapan belajar dan meminta tanda tangan orang tua.'],
+            ['student' => $students[6], 'total' => -15, 'type' => 'Pembinaan guru BK', 'category' => 'Kejujuran', 'violation' => 'Menyontek saat kuis', 'point' => -15, 'description' => 'Siswa terlihat menyalin jawaban teman saat evaluasi singkat.', 'task' => 'Mengulang kuis secara mandiri dan mengikuti pembinaan kejujuran bersama guru BK.'],
+            ['student' => $students[7], 'total' => -10, 'type' => 'Teguran tertulis', 'category' => 'Disiplin', 'violation' => 'Tidak mengikuti upacara', 'point' => -10, 'description' => 'Siswa tidak mengikuti upacara bendera tanpa keterangan.', 'task' => 'Membuat rangkuman tata tertib upacara dan mengikuti upacara berikutnya dengan pengawasan wali kelas.'],
+            ['student' => $students[8], 'total' => -20, 'type' => 'Peringatan 1', 'category' => 'Tanggung Jawab', 'violation' => 'Meninggalkan kelas tanpa izin', 'point' => -20, 'description' => 'Siswa keluar kelas pada jam pelajaran tanpa izin guru.', 'task' => 'Mengisi surat pernyataan dan melapor ke guru piket selama tiga hari.'],
+            ['student' => $students[9], 'total' => -5, 'type' => 'Teguran lisan', 'category' => 'Disiplin', 'violation' => 'Tidak menjaga kebersihan kelas', 'point' => -5, 'description' => 'Siswa meninggalkan sampah di area tempat duduk setelah kegiatan belajar.', 'task' => 'Melaksanakan piket tambahan dan mengingatkan kelompoknya menjaga kebersihan kelas.'],
+            ['student' => $students[10], 'total' => -30, 'type' => 'Panggilan orang tua', 'category' => 'Kerjasama', 'violation' => 'Berselisih dengan teman', 'point' => -30, 'description' => 'Siswa terlibat perselisihan dengan teman dan membutuhkan mediasi sekolah.', 'task' => 'Mengikuti mediasi dengan wali kelas, meminta maaf secara tertulis, dan membuat komitmen menjaga sikap.'],
+            ['student' => $students[11], 'total' => -10, 'type' => 'Peringatan ringan', 'category' => 'Tanggung Jawab', 'violation' => 'Tidak mengumpulkan buku kontrol', 'point' => -10, 'description' => 'Siswa tidak menyerahkan buku kontrol kegiatan sesuai jadwal.', 'task' => 'Melengkapi buku kontrol dan meminta tanda tangan wali kelas serta orang tua.'],
+            ['student' => $students[12], 'total' => -15, 'type' => 'Pembinaan wali kelas', 'category' => 'Disiplin', 'violation' => 'Menggunakan HP saat pelajaran', 'point' => -15, 'description' => 'Siswa menggunakan ponsel saat pembelajaran tanpa instruksi guru.', 'task' => 'Menitipkan ponsel ke wali kelas selama jam belajar dan membuat catatan materi yang tertinggal.'],
+            ['student' => $students[13], 'total' => -5, 'type' => 'Teguran lisan', 'category' => 'Disiplin', 'violation' => 'Tidak memakai sepatu hitam', 'point' => -5, 'description' => 'Siswa memakai sepatu yang tidak sesuai aturan seragam sekolah.', 'task' => 'Memakai sepatu sesuai aturan pada hari berikutnya dan melapor ke wali kelas.'],
+            ['student' => $students[14], 'total' => -20, 'type' => 'Peringatan 1', 'category' => 'Tanggung Jawab', 'violation' => 'Tidak hadir kegiatan literasi', 'point' => -20, 'description' => 'Siswa tidak mengikuti kegiatan literasi pagi tanpa keterangan.', 'task' => 'Membuat resume bacaan dan mengikuti kegiatan literasi pengganti.'],
+            ['student' => $students[15], 'total' => -10, 'type' => 'Peringatan ringan', 'category' => 'Kerjasama', 'violation' => 'Tidak ikut kerja kelompok', 'point' => -10, 'description' => 'Siswa tidak berkontribusi dalam tugas kelompok yang sudah dibagi.', 'task' => 'Menyelesaikan bagian tugas yang belum dikerjakan dan mempresentasikan hasilnya.'],
+            ['student' => $students[16], 'total' => -35, 'type' => 'Panggilan orang tua', 'category' => 'Disiplin', 'violation' => 'Terlambat berulang', 'point' => -35, 'description' => 'Siswa terlambat beberapa kali dalam satu pekan sehingga perlu pembinaan lanjutan.', 'task' => 'Hadir bersama orang tua untuk konseling dan melapor ke piket pagi selama lima hari.'],
+            ['student' => $students[17], 'total' => -15, 'type' => 'Pembinaan guru BK', 'category' => 'Kejujuran', 'violation' => 'Memberi alasan izin tidak sesuai', 'point' => -15, 'description' => 'Siswa memberikan keterangan izin yang tidak sesuai dengan kondisi sebenarnya.', 'task' => 'Mengklarifikasi keterangan kepada wali kelas dan mengikuti pembinaan kejujuran.'],
+            ['student' => $students[18], 'total' => -25, 'type' => 'Peringatan 1', 'category' => 'Tanggung Jawab', 'violation' => 'Merusak fasilitas kelas', 'point' => -25, 'description' => 'Siswa merusak fasilitas kelas karena kurang hati-hati saat kegiatan belajar.', 'task' => 'Memperbaiki atau mengganti fasilitas sesuai arahan sarana prasarana dan membuat surat komitmen.'],
+            ['student' => $students[19], 'total' => -10, 'type' => 'Peringatan ringan', 'category' => 'Disiplin', 'violation' => 'Tidak membawa kartu pelajar', 'point' => -10, 'description' => 'Siswa tidak membawa kartu pelajar saat pemeriksaan identitas sekolah.', 'task' => 'Membawa kartu pelajar pada pemeriksaan berikutnya dan melapor ke wali kelas.'],
         ];
 
-        foreach ($sanctionCases as $case) {
+        foreach ($sanctionCases as $index => $case) {
             StudentPoint::updateOrCreate(
                 [
                     'student_id' => $case['student']->id,
                     'title' => $case['violation'],
-                    'occurred_at' => now()->subDays(1)->toDateString(),
+                    'occurred_at' => now()->subDays($index + 1)->toDateString(),
                 ],
                 [
                     'teacher_id' => $teacher->id,
                     'type' => 'pelanggaran',
-                    'category' => 'Disiplin',
+                    'category' => $case['category'],
                     'point' => $case['point'],
                     'description' => $case['description'],
                 ]
