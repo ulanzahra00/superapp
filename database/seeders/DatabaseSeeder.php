@@ -93,6 +93,35 @@ class DatabaseSeeder extends Seeder
             );
         });
 
+        $cleanStudentSeeds = [
+            ['Aldi Kurniawan', 'aldi@sekolah.test', 'SIS021', 'Kelas 1B'],
+            ['Nabila Safitri', 'nabila@sekolah.test', 'SIS022', 'Kelas 2B'],
+            ['Rehan Maulana', 'rehan@sekolah.test', 'SIS023', 'Kelas 3B'],
+            ['Kirani Azzahra', 'kirani@sekolah.test', 'SIS024', 'Kelas 4B'],
+            ['Farhan Ramli', 'farhan@sekolah.test', 'SIS025', 'Kelas 5A'],
+            ['Zahra Nuraini', 'zahra.nuraini@sekolah.test', 'SIS026', 'Kelas 5B'],
+            ['Rafi Alfarizi', 'rafi@sekolah.test', 'SIS027', 'Kelas 6A'],
+            ['Anisa Fitriani', 'anisa@sekolah.test', 'SIS028', 'Kelas 6B'],
+            ['Mika Prameswari', 'mika@sekolah.test', 'SIS029', 'Kelas 3A'],
+            ['Rangga Saputra', 'rangga@sekolah.test', 'SIS030', 'Kelas 4A'],
+        ];
+
+        $cleanStudents = collect($cleanStudentSeeds)->map(function ($item) {
+            [$name, $email, $nis, $className] = $item;
+
+            return User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'role' => 'siswa',
+                    'parent_id' => null,
+                    'nis' => $nis,
+                    'class_name' => $className,
+                    'password' => Hash::make('password'),
+                ]
+            );
+        });
+
         $student = $students[0];
         $studentTwo = $students[1];
 
@@ -225,6 +254,58 @@ class DatabaseSeeder extends Seeder
                     'read_at' => now()->subHours($index + 2),
                 ]);
             }
+        }
+
+        foreach ($cleanStudents as $index => $item) {
+            foreach ($courses->take(3) as $courseIndex => $course) {
+                Grade::updateOrCreate(
+                    [
+                        'student_id' => $item->id,
+                        'course_id' => $course->id,
+                        'semester' => 'Ganjil',
+                    ],
+                    [
+                        'score' => 78 + (($index * 5 + $courseIndex * 4) % 18),
+                    ]
+                );
+            }
+
+            Attendance::updateOrCreate(
+                [
+                    'student_id' => $item->id,
+                    'date' => now()->subDays($index % 4)->toDateString(),
+                ],
+                [
+                    'status' => ['hadir', 'hadir', 'hadir', 'izin'][$index % 4],
+                ]
+            );
+
+            StudentPoint::updateOrCreate(
+                [
+                    'student_id' => $item->id,
+                    'title' => ['Rajin membaca', 'Membantu teman', 'Aktif piket', 'Rapi dan tertib'][$index % 4],
+                    'occurred_at' => now()->subDays($index + 1)->toDateString(),
+                ],
+                [
+                    'teacher_id' => $teacher->id,
+                    'type' => 'prestasi',
+                    'category' => ['Tanggung Jawab', 'Kerjasama', 'Disiplin', 'Kejujuran'][$index % 4],
+                    'point' => [10, 15, 10, 15][$index % 4],
+                    'description' => [
+                        'Siswa konsisten membaca buku pengayaan sebelum pembelajaran dimulai.',
+                        'Siswa membantu teman memahami tugas tanpa diminta guru.',
+                        'Siswa menjalankan jadwal piket dengan tertib dan menjaga kebersihan kelas.',
+                        'Siswa menunjukkan sikap rapi, tertib, dan jujur dalam kegiatan harian.',
+                    ][$index % 4],
+                ]
+            );
+
+            Message::create([
+                'sender_id' => $teacher->id,
+                'receiver_id' => $item->id,
+                'body' => 'Halo '.$item->name.', pertahankan sikap baik dan kebiasaan belajar yang sudah berjalan.',
+                'read_at' => $index % 2 === 0 ? now()->subHours($index + 1) : null,
+            ]);
         }
 
         Message::create([
