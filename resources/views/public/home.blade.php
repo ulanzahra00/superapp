@@ -15,22 +15,22 @@
                 </div>
             </div>
             <div class="surface rounded-2xl p-5">
-                <div class="rounded-2xl bg-gradient-to-br from-ocean via-cyan-800 to-brand p-6 text-white">
-                    <p class="text-sm font-bold text-emerald-100">Monitoring real-time</p>
+                <div class="rounded-2xl bg-gradient-to-br from-[#006B3F] via-[#00923F] to-[#8DC63F] p-6 text-white">
+                    <p class="text-sm font-bold text-lime-100">Monitoring real-time</p>
                     <h2 class="mt-3 text-2xl font-extrabold">Portal Layanan Sekolah</h2>
-                    <p class="mt-3 text-sm leading-6 text-cyan-50">Absensi, LMS, dan komunikasi internal tersaji dalam panel khusus agar warga sekolah dapat membuka data sesuai kebutuhan.</p>
+                    <p class="mt-3 text-sm leading-6 text-green-50">Absensi, LMS, dan komunikasi internal tersaji dalam panel khusus agar warga sekolah dapat membuka data sesuai kebutuhan.</p>
                     <div class="mt-6 grid gap-3 sm:grid-cols-3">
-                        <div class="rounded-xl bg-white/12 p-4 ring-1 ring-white/15">
+                        <div class="rounded-xl bg-white/12 p-4 ring-1 ring-lime-100/25">
                             <p class="text-2xl font-extrabold">{{ $stats['students'] }}</p>
-                            <p class="text-xs text-cyan-100">Siswa</p>
+                            <p class="text-xs text-lime-100">Siswa</p>
                         </div>
-                        <div class="rounded-xl bg-white/12 p-4 ring-1 ring-white/15">
+                        <div class="rounded-xl bg-white/12 p-4 ring-1 ring-lime-100/25">
                             <p class="text-2xl font-extrabold">{{ $stats['teachers'] }}</p>
-                            <p class="text-xs text-cyan-100">Guru</p>
+                            <p class="text-xs text-lime-100">Guru</p>
                         </div>
-                        <div class="rounded-xl bg-white/12 p-4 ring-1 ring-white/15">
+                        <div class="rounded-xl bg-white/12 p-4 ring-1 ring-lime-100/25">
                             <p class="text-2xl font-extrabold">{{ $stats['news'] }}</p>
-                            <p class="text-xs text-cyan-100">Berita</p>
+                            <p class="text-xs text-lime-100">Berita</p>
                         </div>
                     </div>
                 </div>
