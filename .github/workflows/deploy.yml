@@ -18,6 +18,6 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        port: ${{ vars.FTP_PORT }}
+        port: 22
         local_path: './*'
         remote_path: '/public_html/deploypengumuman'
