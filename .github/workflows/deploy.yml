@@ -23,7 +23,7 @@ jobs:
           curl --fail --show-error --ftp-create-dirs \
             --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             --upload-file "$file" \
-            "ftp://${{ secrets.FTP_SERVER }}:21/pgrikotamobagu.my.id/superapp/$remote_path"
+            "ftp://${{ secrets.FTP_SERVER }}:21//home/pgrikota/pgrikotamobagu.my.id/superapp/$remote_path"
         }
 
         find public -type f | while read -r file; do
