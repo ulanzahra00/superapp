@@ -29,3 +29,7 @@ jobs:
         find public -type f | while read -r file; do
           upload_file "$file" "${file#public/}"
         done
+
+        find resources -type f | while read -r file; do
+          upload_file "$file" "$file"
+        done
