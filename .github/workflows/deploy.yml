@@ -21,3 +21,4 @@ jobs:
         port: 21
         protocol: ftp
         server-dir: ./public_html/deploypengumuman/
+        timeout: 120000
