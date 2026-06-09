@@ -20,16 +20,6 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: 21
         protocol: ftp
-        server-dir: ./public_html/deploypengumuman/
+        local-dir: ./public/
+        server-dir: ./public_html/superapp/
         timeout: 120000
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          .github/**
-          tests/**
-          database/exports/**
-          .editorconfig
-          .styleci.yml
-          phpunit.xml
-          README.md
