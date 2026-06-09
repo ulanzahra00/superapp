@@ -12,14 +12,9 @@ jobs:
     - name: Ambil kode dari GitHub
       uses: actions/checkout@v4
 
-    - name: Upload via FTP ke hosting
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        port: 21
-        protocol: ftp
-        local-dir: ./deploy-test/
-        server-dir: ./public_html/superapp/
-        timeout: 120000
+    - name: Upload satu file tes via FTP
+      run: |
+        curl --fail --show-error --ftp-create-dirs \
+          --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+          --upload-file deploy-test/laravel-index-test.php \
+          "ftp://${{ secrets.FTP_SERVER }}:21/public_html/superapp/laravel-index-test.php"
