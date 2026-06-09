@@ -12,7 +12,7 @@ class CharacterSanctionService
     public const RULES = [
         -150 => 'Rekomendasi tindakan berat',
         -100 => 'Skorsing',
-        -50 => 'Panggilan orang tua',
+        -30 => 'Panggilan orang tua',
         -20 => 'Peringatan 1',
     ];
 

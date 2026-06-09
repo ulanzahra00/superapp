@@ -64,7 +64,7 @@
     <aside class="surface rounded-xl p-5">
         <h2 class="text-lg font-bold">Rule Sanksi Otomatis</h2>
         <div class="mt-4 space-y-3">
-            @foreach([['<= -20','Peringatan 1'],['<= -50','Panggilan orang tua'],['<= -100','Skorsing'],['<= -150','Rekomendasi tindakan berat']] as [$point, $label])
+            @foreach([['<= -20','Peringatan 1'],['<= -30','Panggilan orang tua'],['<= -100','Skorsing'],['<= -150','Rekomendasi tindakan berat']] as [$point, $label])
                 <div class="rounded-xl border border-slate-200/80 bg-white/70 p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-soft">
                     <p class="font-bold">{{ $point }}</p>
                     <p class="text-sm text-slate-500">{{ $label }}</p>
