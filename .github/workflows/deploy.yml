@@ -12,12 +12,12 @@ jobs:
     - name: Ambil kode dari GitHub
       uses: actions/checkout@v4
 
-    - name: Upload via FTPS ke cPanel
+    - name: Upload via FTP ke hosting
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         port: 21
-        protocol: ftps
+        protocol: ftp
         server-dir: ./public_html/deploypengumuman/
