@@ -28,7 +28,13 @@ jobs:
         upload_file() {
           local file="$1"
           local remote_path="$2"
+          echo "Uploading $file -> $remote_path"
           curl --fail --show-error --ftp-create-dirs \
+            --retry 5 \
+            --retry-delay 3 \
+            --connect-timeout 30 \
+            --speed-time 60 \
+            --speed-limit 1 \
             --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             --upload-file "$file" \
             "ftp://${{ secrets.FTP_SERVER }}:21/public_html/superapp/$remote_path"
