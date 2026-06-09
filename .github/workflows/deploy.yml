@@ -1,4 +1,4 @@
-name: Deploy Website via SFTP Murni
+name: Deploy Website ke Hosting
 on:
   push:
     branches:
@@ -6,17 +6,18 @@ on:
 
 jobs:
   deploy:
+    name: Deploy Project
     runs-on: ubuntu-latest
     steps:
     - name: Ambil kode dari GitHub
       uses: actions/checkout@v4
 
-    - name: Jalankan SFTP Upload Bersih
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+    - name: Upload via FTPS ke cPanel
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
-        ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.FTP_PORT }}
-        local_path: './*'
-        remote_path: '/public_html/deploypengumuman'
+        password: ${{ secrets.FTP_PASSWORD }}
+        port: 21
+        protocol: ftps
+        server-dir: ./public_html/deploypengumuman/
