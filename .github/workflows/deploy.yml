@@ -20,6 +20,6 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         port: 21
         protocol: ftp
-        local-dir: ./public/
+        local-dir: ./deploy-test/
         server-dir: ./public_html/superapp/
         timeout: 120000
