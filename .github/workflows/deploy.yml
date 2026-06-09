@@ -22,3 +22,14 @@ jobs:
         protocol: ftp
         server-dir: ./public_html/deploypengumuman/
         timeout: 120000
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          .github/**
+          tests/**
+          database/exports/**
+          .editorconfig
+          .styleci.yml
+          phpunit.xml
+          README.md
