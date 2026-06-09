@@ -30,6 +30,5 @@ jobs:
           upload_file "$file" "${file#public/}"
         done
 
-        find resources -type f | while read -r file; do
-          upload_file "$file" "$file"
-        done
+        upload_file "resources/views/auth/login.blade.php" "resources/views/auth/login.blade.php"
+        upload_file "resources/views/public/home.blade.php" "resources/views/public/home.blade.php"
