@@ -1,0 +1,43 @@
+name: Deploy Website ke public_html/tes
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Project Tes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ambil kode dari GitHub
+        uses: actions/checkout@v4
+
+      - name: Upload folder public ke public_html/tes via FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_TARGET_DIR: public_html/tes
+        run: |
+          set -e
+
+          upload_file() {
+            local file="$1"
+            local remote_path="$2"
+
+            echo "Uploading $file -> $FTP_TARGET_DIR/$remote_path"
+            curl --fail --show-error --ftp-create-dirs \
+              --user "$FTP_USERNAME:$FTP_PASSWORD" \
+              --upload-file "$file" \
+              "ftp://$FTP_SERVER:21//$FTP_TARGET_DIR/$remote_path"
+          }
+
+          find public -type f | while read -r file; do
+            upload_file "$file" "${file#public/}"
+          done
+
+          upload_file "resources/views/auth/login.blade.php" "resources/views/auth/login.blade.php"
+          upload_file "resources/views/public/home.blade.php" "resources/views/public/home.blade.php"
