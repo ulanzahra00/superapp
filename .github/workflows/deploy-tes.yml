@@ -62,17 +62,14 @@ jobs:
         run: |
           set -e
 
-          upload_file() {
-            local file="$1"
-            local remote_path="$2"
+          sudo apt-get update
+          sudo apt-get install -y lftp
 
-            echo "Uploading $file -> $FTP_TARGET_DIR/$remote_path"
-            curl --fail --show-error --ftp-create-dirs \
-              --user "$FTP_USERNAME:$FTP_PASSWORD" \
-              --upload-file "$file" \
-              "ftp://$FTP_SERVER:21//$FTP_TARGET_DIR/$remote_path"
-          }
-
-          find deploy-package -type f | while read -r file; do
-            upload_file "$file" "${file#deploy-package/}"
-          done
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" <<EOF
+          set ftp:ssl-allow no
+          set net:max-retries 2
+          set net:timeout 30
+          mkdir -p $FTP_TARGET_DIR
+          mirror -R --verbose --parallel=5 deploy-package $FTP_TARGET_DIR
+          bye
+          EOF
