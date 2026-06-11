@@ -15,7 +15,45 @@ jobs:
       - name: Ambil kode dari GitHub
         uses: actions/checkout@v4
 
-      - name: Upload folder public ke public_html/tes via FTP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer
+
+      - name: Install dependency Laravel
+        run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
+      - name: Siapkan paket deploy Laravel
+        run: |
+          set -e
+
+          rm -rf deploy-package
+          mkdir -p deploy-package
+
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.env' \
+            --exclude='node_modules/' \
+            --exclude='tests/' \
+            --exclude='deploy-package/' \
+            --exclude='database/exports/' \
+            ./ deploy-package/
+
+          cp -a public/. deploy-package/
+          rm -rf deploy-package/public
+
+          sed -i "s#__DIR__.'/../vendor/autoload.php'#__DIR__.'/vendor/autoload.php'#" deploy-package/index.php
+          sed -i "s#__DIR__.'/../bootstrap/app.php'#__DIR__.'/bootstrap/app.php'#" deploy-package/index.php
+          sed -i "s#__DIR__.'/../storage/framework/maintenance.php'#__DIR__.'/storage/framework/maintenance.php'#" deploy-package/index.php
+
+          mkdir -p deploy-package/storage/framework/cache/data
+          mkdir -p deploy-package/storage/framework/sessions
+          mkdir -p deploy-package/storage/framework/views
+          mkdir -p deploy-package/storage/logs
+
+      - name: Upload project ke public_html/tes via FTP
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
@@ -35,9 +73,6 @@ jobs:
               "ftp://$FTP_SERVER:21//$FTP_TARGET_DIR/$remote_path"
           }
 
-          find public -type f | while read -r file; do
-            upload_file "$file" "${file#public/}"
+          find deploy-package -type f | while read -r file; do
+            upload_file "$file" "${file#deploy-package/}"
           done
-
-          upload_file "resources/views/auth/login.blade.php" "resources/views/auth/login.blade.php"
-          upload_file "resources/views/public/home.blade.php" "resources/views/public/home.blade.php"
