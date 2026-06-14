@@ -76,7 +76,7 @@ class CharacterSanctionService
             $message = "⚠️ INFO PELANGGARAN SISWA ⚠️\n\n"
                 . "Nama Siswa: {$student->name}\n"
                 . "Total Poin: {$total}\n\n"
-                . "Siswa yang bersangkutan telah mencapai batas poin pelanggaran (-30). "
+                . "Siswa yang bersangkutan telah mencapai batas poin pelanggaran ({$total}). "
                 . "Sistem telah menerbitkan surat panggilan orang tua. "
                 . "Mohon Bapak/Ibu Wali Kelas untuk menindaklanjutinya.";
 
