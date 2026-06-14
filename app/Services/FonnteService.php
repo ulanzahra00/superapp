@@ -7,15 +7,14 @@ use Illuminate\Support\Facades\Log;
 
 class FonnteService
 {
-    private string $apiKey;
-    private string $groupId;
-    private string $baseUrl;
+    private ?string $apiKey = null;
+    private ?string $groupId = null;
+    private string $baseUrl = 'https://api.fonnte.com';
 
     public function __construct()
     {
         $this->apiKey = config('services.fonnte.api_key');
         $this->groupId = config('services.fonnte.group_id');
-        $this->baseUrl = 'https://api.fonnte.com';
     }
 
     /**
@@ -24,7 +23,10 @@ class FonnteService
     public function sendToGroup(string $message): bool
     {
         if (empty($this->apiKey) || empty($this->groupId)) {
-            Log::warning('FonnteService: API key or Group ID not configured.');
+            Log::warning('FonnteService: API key or Group ID not configured.', [
+                'api_key_set' => !empty($this->apiKey),
+                'group_id_set' => !empty($this->groupId),
+            ]);
             return false;
         }
 
