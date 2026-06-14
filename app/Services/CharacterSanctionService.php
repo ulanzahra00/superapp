@@ -50,26 +50,28 @@ class CharacterSanctionService
         }
 
         $latest = $student->sanctions()->latest()->first();
-        if ($latest && $latest->sanction_type === $type) {
-            return $latest;
+        $isNewSanction = !$latest || $latest->sanction_type !== $type;
+
+        if ($isNewSanction) {
+            $sanction = Sanction::create([
+                'school_id' => $student->school_id,
+                'student_id' => $student->id,
+                'total_points' => $total,
+                'sanction_type' => $type,
+                'note' => 'Sanksi otomatis berdasarkan total poin karakter.',
+            ]);
+
+            $this->notifyParent(
+                $student,
+                'Sanksi otomatis: '.$type,
+                $student->name.' mencapai total poin '.$total.'. Tindak lanjut: '.$type.'.',
+                'danger'
+            );
+        } else {
+            $sanction = $latest;
         }
 
-        $sanction = Sanction::create([
-            'school_id' => $student->school_id,
-            'student_id' => $student->id,
-            'total_points' => $total,
-            'sanction_type' => $type,
-            'note' => 'Sanksi otomatis berdasarkan total poin karakter.',
-        ]);
-
-        $this->notifyParent(
-            $student,
-            'Sanksi otomatis: '.$type,
-            $student->name.' mencapai total poin '.$total.'. Tindak lanjut: '.$type.'.',
-            'danger'
-        );
-
-        // Kirim notifikasi WhatsApp ke grup sekolah jika sanksi "Panggilan orang tua" (<= -30 poin)
+        // Kirim notifikasi WhatsApp ke grup sekolah SETIAP KALI poin <= -30 (bukan cuma saat sanction baru)
         if ($type === 'Panggilan orang tua') {
             $message = "⚠️ INFO PELANGGARAN SISWA ⚠️\n\n"
                 . "Nama Siswa: {$student->name}\n"
