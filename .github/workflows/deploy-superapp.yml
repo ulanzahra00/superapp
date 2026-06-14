@@ -21,6 +21,13 @@ jobs:
           php-version: '8.1'
           tools: composer
 
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
       - name: Install dependency Laravel
         run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
@@ -28,9 +35,10 @@ jobs:
         run: |
           set -e
 
-          rm -rf deploy-package
+          # Buat folder deploy
           mkdir -p deploy-package
 
+          # Copy semua file kecuali yang tidak perlu
           rsync -a \
             --exclude='.git/' \
             --exclude='.github/' \
@@ -41,19 +49,22 @@ jobs:
             --exclude='database/exports/' \
             ./ deploy-package/
 
+          # Pindahkan isi public/ ke root deploy
           cp -a public/. deploy-package/
           rm -rf deploy-package/public
 
+          # Fix path index.php untuk hosting
           sed -i "s#__DIR__.'/../vendor/autoload.php'#__DIR__.'/vendor/autoload.php'#" deploy-package/index.php
           sed -i "s#__DIR__.'/../bootstrap/app.php'#__DIR__.'/bootstrap/app.php'#" deploy-package/index.php
           sed -i "s#__DIR__.'/../storage/framework/maintenance.php'#__DIR__.'/storage/framework/maintenance.php'#" deploy-package/index.php
 
+          # Buat struktur storage
           mkdir -p deploy-package/storage/framework/cache/data
           mkdir -p deploy-package/storage/framework/sessions
           mkdir -p deploy-package/storage/framework/views
           mkdir -p deploy-package/storage/logs
 
-      - name: Upload project ke public_html/superapp via FTP
+      - name: Upload ke Server via FTP
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
@@ -62,14 +73,18 @@ jobs:
         run: |
           set -e
 
-          sudo apt-get update
-          sudo apt-get install -y lftp
+          # Install lftp tanpa update package list (pakai cached apt)
+          sudo apt-get install -y --no-upgrade lftp 2>/dev/null || sudo apt-get update -qq && sudo apt-get install -y lftp
 
+          # Upload dengan koneksi paralel lebih banyak
           lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" <<EOF
           set ftp:ssl-allow no
-          set net:max-retries 2
-          set net:timeout 30
+          set net:max-retries 3
+          set net:timeout 60
+          set ftp:parallel 5
+          set cmd:parallel 5
+          set ftp:auto-passive-mode yes
           mkdir -p $FTP_TARGET_DIR
-          mirror -R --verbose --parallel=5 deploy-package $FTP_TARGET_DIR
+          mirror -R --verbose --parallel=10 deploy-package $FTP_TARGET_DIR
           bye
           EOF
