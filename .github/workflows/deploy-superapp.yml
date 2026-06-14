@@ -1,4 +1,4 @@
-name: Deploy Website ke public_html/tes
+name: Deploy Website ke public_html/superapp
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy Project Tes
+    name: Deploy Project SuperApp
     runs-on: ubuntu-latest
 
     steps:
@@ -53,12 +53,12 @@ jobs:
           mkdir -p deploy-package/storage/framework/views
           mkdir -p deploy-package/storage/logs
 
-      - name: Upload project ke public_html/tes via FTP
+      - name: Upload project ke public_html/superapp via FTP
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_TARGET_DIR: public_html/tes
+          FTP_TARGET_DIR: public_html/superapp
         run: |
           set -e
 

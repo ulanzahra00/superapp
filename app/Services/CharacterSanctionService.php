@@ -9,6 +9,11 @@ use App\Models\User;
 
 class CharacterSanctionService
 {
+    public function __construct(
+        private FonnteService $fonnte
+    ) {
+    }
+
     public const RULES = [
         -150 => 'Rekomendasi tindakan berat',
         -100 => 'Skorsing',
@@ -50,6 +55,7 @@ class CharacterSanctionService
         }
 
         $sanction = Sanction::create([
+            'school_id' => $student->school_id,
             'student_id' => $student->id,
             'total_points' => $total,
             'sanction_type' => $type,
@@ -62,6 +68,18 @@ class CharacterSanctionService
             $student->name.' mencapai total poin '.$total.'. Tindak lanjut: '.$type.'.',
             'danger'
         );
+
+        // Kirim notifikasi WhatsApp ke grup sekolah jika sanksi "Panggilan orang tua" (<= -30 poin)
+        if ($type === 'Panggilan orang tua') {
+            $message = "⚠️ INFO PELANGGARAN SISWA ⚠️\n\n"
+                . "Nama Siswa: {$student->name}\n"
+                . "Total Poin: {$total}\n\n"
+                . "Siswa yang bersangkutan telah mencapai batas poin pelanggaran (-30). "
+                . "Sistem telah menerbitkan surat panggilan orang tua. "
+                . "Mohon Bapak/Ibu Wali Kelas untuk menindaklanjutinya.";
+
+            $this->fonnte->sendToGroup($message);
+        }
 
         return $sanction;
     }
@@ -84,6 +102,7 @@ class CharacterSanctionService
         }
 
         SchoolNotification::create([
+            'school_id' => $student->school_id,
             'user_id' => $student->parent_id,
             'title' => $title,
             'message' => $message,

@@ -30,4 +30,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'fonnte' => [
+        'api_key' => env('FONNTE_API_KEY'),
+        'group_id' => env('FONNTE_GROUP_ID'),
+    ],
+
 ];
