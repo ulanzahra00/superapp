@@ -8,10 +8,12 @@ use App\Models\Grade;
 use App\Models\Message;
 use App\Models\News;
 use App\Models\Sanction;
+use App\Models\School;
 use App\Models\SchoolNotification;
 use App\Models\StudentPoint;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -24,9 +26,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $school = School::firstOrCreate(
+            ['slug' => 'sd-negeri-1-molinow'],
+            [
+                'name' => 'SD Negeri 1 Molinow',
+                'status' => 'active',
+            ]
+        );
+
         $admin = User::updateOrCreate(
             ['email' => 'admin@sekolah.test'],
             [
+                'school_id' => $school->id,
                 'name' => 'Kepala Sekolah',
                 'role' => 'admin',
                 'phone' => '0811000001',
@@ -34,11 +45,24 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'superadmin@sekolah.test'],
+            [
+                'school_id' => $school->id,
+                'name' => 'Super Admin Pusat',
+                'role' => 'super_admin',
+                'phone' => '0811000000',
+                'password' => Hash::make('password'),
+            ]
+        );
+
         $teacher = User::updateOrCreate(
             ['email' => 'guru@sekolah.test'],
             [
+                'school_id' => $school->id,
                 'name' => 'Ibu Guru Maya',
                 'role' => 'guru',
+                'class_name' => 'Kelas 4 A',
                 'phone' => '0811000002',
                 'password' => Hash::make('password'),
             ]
@@ -47,6 +71,7 @@ class DatabaseSeeder extends Seeder
         $parent = User::updateOrCreate(
             ['email' => 'ortu@sekolah.test'],
             [
+                'school_id' => $school->id,
                 'name' => 'Bapak Andi',
                 'role' => 'orang_tua',
                 'phone' => '0811000003',
@@ -55,34 +80,35 @@ class DatabaseSeeder extends Seeder
         );
 
         $studentSeeds = [
-            ['Andi Pratama', 'siswa@sekolah.test', 'SIS001', 'Kelas 1A', $parent->id],
-            ['Siti Rahma', 'siti@sekolah.test', 'SIS002', 'Kelas 1B', null],
-            ['Budi Santoso', 'budi@sekolah.test', 'SIS003', 'Kelas 2A', null],
-            ['Dewi Lestari', 'dewi@sekolah.test', 'SIS004', 'Kelas 2B', null],
-            ['Rizky Maulana', 'rizky@sekolah.test', 'SIS005', 'Kelas 3A', null],
-            ['Nadia Putri', 'nadia@sekolah.test', 'SIS006', 'Kelas 3B', null],
-            ['Fajar Nugroho', 'fajar@sekolah.test', 'SIS007', 'Kelas 4A', null],
-            ['Ayu Wulandari', 'ayu@sekolah.test', 'SIS008', 'Kelas 4B', null],
-            ['Raka Saputra', 'raka@sekolah.test', 'SIS009', 'Kelas 5A', null],
-            ['Maya Permata', 'maya@sekolah.test', 'SIS010', 'Kelas 5B', null],
-            ['Dimas Firmansyah', 'dimas@sekolah.test', 'SIS011', 'Kelas 6A', null],
-            ['Intan Maharani', 'intan@sekolah.test', 'SIS012', 'Kelas 6B', null],
-            ['Bagas Aditya', 'bagas@sekolah.test', 'SIS013', 'Kelas 1A', null],
-            ['Citra Anggraini', 'citra@sekolah.test', 'SIS014', 'Kelas 2A', null],
-            ['Galih Prakoso', 'galih@sekolah.test', 'SIS015', 'Kelas 3A', null],
-            ['Laras Puspita', 'laras@sekolah.test', 'SIS016', 'Kelas 4A', null],
-            ['Yoga Ramadhan', 'yoga@sekolah.test', 'SIS017', 'Kelas 5A', null],
-            ['Putri Amelia', 'putri@sekolah.test', 'SIS018', 'Kelas 6A', null],
-            ['Arif Hidayat', 'arif@sekolah.test', 'SIS019', 'Kelas 5B', null],
-            ['Sekar Kinanti', 'sekar@sekolah.test', 'SIS020', 'Kelas 6B', null],
+            ['Andi Pratama', 'siswa@sekolah.test', 'SIS001', 'Kelas 1 A', $parent->id],
+            ['Siti Rahma', 'siti@sekolah.test', 'SIS002', 'Kelas 1 B', null],
+            ['Budi Santoso', 'budi@sekolah.test', 'SIS003', 'Kelas 2 A', null],
+            ['Dewi Lestari', 'dewi@sekolah.test', 'SIS004', 'Kelas 2 B', null],
+            ['Rizky Maulana', 'rizky@sekolah.test', 'SIS005', 'Kelas 3 A', null],
+            ['Nadia Putri', 'nadia@sekolah.test', 'SIS006', 'Kelas 3 B', null],
+            ['Fajar Nugroho', 'fajar@sekolah.test', 'SIS007', 'Kelas 4 A', null],
+            ['Ayu Wulandari', 'ayu@sekolah.test', 'SIS008', 'Kelas 4 B', null],
+            ['Raka Saputra', 'raka@sekolah.test', 'SIS009', 'Kelas 5 A', null],
+            ['Maya Permata', 'maya@sekolah.test', 'SIS010', 'Kelas 5 B', null],
+            ['Dimas Firmansyah', 'dimas@sekolah.test', 'SIS011', 'Kelas 6 A', null],
+            ['Intan Maharani', 'intan@sekolah.test', 'SIS012', 'Kelas 6 B', null],
+            ['Bagas Aditya', 'bagas@sekolah.test', 'SIS013', 'Kelas 1 A', null],
+            ['Citra Anggraini', 'citra@sekolah.test', 'SIS014', 'Kelas 2 A', null],
+            ['Galih Prakoso', 'galih@sekolah.test', 'SIS015', 'Kelas 3 A', null],
+            ['Laras Puspita', 'laras@sekolah.test', 'SIS016', 'Kelas 4 A', null],
+            ['Yoga Ramadhan', 'yoga@sekolah.test', 'SIS017', 'Kelas 5 A', null],
+            ['Putri Amelia', 'putri@sekolah.test', 'SIS018', 'Kelas 6 A', null],
+            ['Arif Hidayat', 'arif@sekolah.test', 'SIS019', 'Kelas 5 B', null],
+            ['Sekar Kinanti', 'sekar@sekolah.test', 'SIS020', 'Kelas 6 B', null],
         ];
 
-        $students = collect($studentSeeds)->map(function ($item) {
+        $students = collect($studentSeeds)->map(function ($item) use ($school) {
             [$name, $email, $nis, $className, $parentId] = $item;
 
             return User::updateOrCreate(
                 ['email' => $email],
                 [
+                    'school_id' => $school->id,
                     'name' => $name,
                     'role' => 'siswa',
                     'parent_id' => $parentId,
@@ -94,24 +120,25 @@ class DatabaseSeeder extends Seeder
         });
 
         $cleanStudentSeeds = [
-            ['Aldi Kurniawan', 'aldi@sekolah.test', 'SIS021', 'Kelas 1B'],
-            ['Nabila Safitri', 'nabila@sekolah.test', 'SIS022', 'Kelas 2B'],
-            ['Rehan Maulana', 'rehan@sekolah.test', 'SIS023', 'Kelas 3B'],
-            ['Kirani Azzahra', 'kirani@sekolah.test', 'SIS024', 'Kelas 4B'],
-            ['Farhan Ramli', 'farhan@sekolah.test', 'SIS025', 'Kelas 5A'],
-            ['Zahra Nuraini', 'zahra.nuraini@sekolah.test', 'SIS026', 'Kelas 5B'],
-            ['Rafi Alfarizi', 'rafi@sekolah.test', 'SIS027', 'Kelas 6A'],
-            ['Anisa Fitriani', 'anisa@sekolah.test', 'SIS028', 'Kelas 6B'],
-            ['Mika Prameswari', 'mika@sekolah.test', 'SIS029', 'Kelas 3A'],
-            ['Rangga Saputra', 'rangga@sekolah.test', 'SIS030', 'Kelas 4A'],
+            ['Aldi Kurniawan', 'aldi@sekolah.test', 'SIS021', 'Kelas 1 B'],
+            ['Nabila Safitri', 'nabila@sekolah.test', 'SIS022', 'Kelas 2 B'],
+            ['Rehan Maulana', 'rehan@sekolah.test', 'SIS023', 'Kelas 3 B'],
+            ['Kirani Azzahra', 'kirani@sekolah.test', 'SIS024', 'Kelas 4 B'],
+            ['Farhan Ramli', 'farhan@sekolah.test', 'SIS025', 'Kelas 5 A'],
+            ['Zahra Nuraini', 'zahra.nuraini@sekolah.test', 'SIS026', 'Kelas 5 B'],
+            ['Rafi Alfarizi', 'rafi@sekolah.test', 'SIS027', 'Kelas 6 A'],
+            ['Anisa Fitriani', 'anisa@sekolah.test', 'SIS028', 'Kelas 6 B'],
+            ['Mika Prameswari', 'mika@sekolah.test', 'SIS029', 'Kelas 3 A'],
+            ['Rangga Saputra', 'rangga@sekolah.test', 'SIS030', 'Kelas 4 A'],
         ];
 
-        $cleanStudents = collect($cleanStudentSeeds)->map(function ($item) {
+        $cleanStudents = collect($cleanStudentSeeds)->map(function ($item) use ($school) {
             [$name, $email, $nis, $className] = $item;
 
             return User::updateOrCreate(
                 ['email' => $email],
                 [
+                    'school_id' => $school->id,
                     'name' => $name,
                     'role' => 'siswa',
                     'parent_id' => null,
@@ -121,6 +148,39 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         });
+
+        $homeroomClasses = [
+            'Kelas 1 A',
+            'Kelas 1 B',
+            'Kelas 2 A',
+            'Kelas 2 B',
+            'Kelas 3 A',
+            'Kelas 3 B',
+            'Kelas 4 A',
+            'Kelas 4 B',
+            'Kelas 5 A',
+            'Kelas 5 B',
+            'Kelas 6 A',
+            'Kelas 6 B',
+        ];
+
+        foreach ($homeroomClasses as $className) {
+            if (User::where('role', 'guru')->where('school_id', $school->id)->where('class_name', $className)->exists()) {
+                continue;
+            }
+
+            User::updateOrCreate(
+                ['email' => 'guru.'.Str::slug($className). '@sekolah.test'],
+                [
+                    'school_id' => $school->id,
+                    'name' => 'Wali '.$className,
+                    'role' => 'guru',
+                    'class_name' => $className,
+                    'phone' => null,
+                    'password' => Hash::make('password'),
+                ]
+            );
+        }
 
         $student = $students[0];
         $studentTwo = $students[1];
@@ -366,19 +426,86 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        foreach (['Transformasi Digital Sekolah', 'Agenda Projek P5', 'Prestasi Siswa Pekan Ini'] as $index => $title) {
+        $newsSeeds = [
+            [
+                'title' => 'Literasi Pagi Mendorong Kebiasaan Membaca Siswa',
+                'category' => 'Literasi',
+                'cover_color' => 'emerald',
+                'image_url' => 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80',
+                'excerpt' => 'Program literasi pagi dilaksanakan untuk membangun kebiasaan membaca, memperkaya kosakata, dan meningkatkan pemahaman siswa sebelum kegiatan belajar dimulai.',
+                'content' => "Sekolah melaksanakan program literasi pagi selama lima belas menit sebelum pembelajaran dimulai. Kegiatan ini memberi ruang bagi siswa untuk membaca buku fiksi, nonfiksi, maupun bahan bacaan tematik sesuai minat masing-masing.\n\nGuru kelas mendampingi siswa dengan mencatat perkembangan bacaan dan mengajak beberapa siswa membagikan isi buku secara singkat. Melalui kegiatan sederhana ini, sekolah berharap budaya membaca dapat tumbuh secara konsisten dan berdampak pada kemampuan memahami materi pelajaran.",
+            ],
+            [
+                'title' => 'Pembelajaran Digital Membantu Guru Memantau Perkembangan Kelas',
+                'category' => 'Teknologi Pendidikan',
+                'cover_color' => 'sky',
+                'image_url' => 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1200&q=80',
+                'excerpt' => 'Pemanfaatan platform digital sekolah membantu guru mencatat kehadiran, membagikan materi, dan memantau perkembangan siswa secara lebih teratur.',
+                'content' => "Guru mulai memanfaatkan layanan digital sekolah untuk mendukung proses pembelajaran harian. Materi, rekap kehadiran, dan catatan karakter siswa dapat dipantau dalam satu sistem sehingga koordinasi antara guru, siswa, dan orang tua menjadi lebih mudah.\n\nPenggunaan teknologi ini tidak menggantikan peran guru di kelas, tetapi membantu pekerjaan administrasi agar lebih tertata. Data yang tersimpan juga dapat menjadi bahan evaluasi dalam rapat wali kelas dan tindak lanjut pembinaan siswa.",
+            ],
+            [
+                'title' => 'Sekolah Memperkuat Pembelajaran Berbasis 8 Dimensi Profil Lulusan',
+                'category' => 'Kurikulum',
+                'cover_color' => 'amber',
+                'image_url' => 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
+                'excerpt' => 'Sekolah mulai mengarahkan kegiatan belajar pada 8 dimensi profil lulusan agar siswa tumbuh utuh dalam karakter, nalar, kolaborasi, kemandirian, kesehatan, dan komunikasi.',
+                'content' => "Sekolah memperkuat arah pembelajaran dengan menekankan 8 dimensi profil lulusan, yaitu keimanan dan ketakwaan, kewargaan, penalaran kritis, kreativitas, kolaborasi, kemandirian, kesehatan, dan komunikasi. Pendekatan ini membantu guru merancang kegiatan belajar yang tidak hanya mengejar capaian akademik, tetapi juga membentuk kebiasaan berpikir, bersikap, dan bekerja sama.\n\nDalam pelaksanaannya, guru mengaitkan materi pelajaran dengan tugas yang mendorong siswa berdiskusi, memecahkan masalah, menjaga kesehatan diri, serta menyampaikan gagasan secara jelas. Sekolah berharap penguatan 8 dimensi ini membuat lulusan lebih siap beradaptasi, bertanggung jawab, dan berkontribusi positif di lingkungan masyarakat.",
+            ],
+            [
+                'title' => 'Kolaborasi Orang Tua dan Sekolah Menguatkan Pembinaan Karakter',
+                'category' => 'Karakter',
+                'cover_color' => 'rose',
+                'image_url' => 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80',
+                'excerpt' => 'Sekolah mengajak orang tua memperkuat pembinaan karakter siswa melalui komunikasi rutin, pemantauan kehadiran, dan tindak lanjut catatan perilaku.',
+                'content' => "Pembinaan karakter siswa membutuhkan kerja sama yang dekat antara sekolah dan keluarga. Melalui komunikasi rutin, orang tua dapat mengetahui perkembangan anak, termasuk kehadiran, prestasi, dan catatan pelanggaran yang perlu ditindaklanjuti.\n\nSekolah mendorong setiap wali kelas untuk menyampaikan informasi secara proporsional dan membangun dialog yang mendukung perubahan positif. Dengan keterlibatan orang tua, pembiasaan disiplin dan tanggung jawab dapat berjalan lebih konsisten di rumah maupun di sekolah.",
+            ],
+        ];
+
+        foreach ($newsSeeds as $index => $item) {
             News::updateOrCreate(
-                ['slug' => Str::slug($title).'-'.$index],
+                ['slug' => Str::slug($item['title']).'-'.$index],
                 [
                     'author_id' => $admin->id,
-                    'title' => $title,
-                    'category' => $index === 0 ? 'Pengumuman' : 'Kegiatan',
-                    'cover_color' => ['emerald', 'amber', 'rose'][$index],
-                    'excerpt' => 'Informasi terbaru untuk warga sekolah dan orang tua.',
-                    'content' => 'Sekolah menghadirkan layanan digital terpadu untuk absensi, LMS, nilai, komunikasi, berita, serta monitoring karakter siswa.',
+                    'title' => $item['title'],
+                    'category' => $item['category'],
+                    'cover_color' => $item['cover_color'],
+                    'image_url' => $item['image_url'],
+                    'excerpt' => $item['excerpt'],
+                    'content' => $item['content'],
                     'published_at' => now()->subDays($index),
                 ]
             );
+        }
+
+        $this->backfillSchoolIds($school->id);
+    }
+
+    private function backfillSchoolIds($schoolId)
+    {
+        DB::table('users')->whereNull('school_id')->update(['school_id' => $schoolId]);
+
+        foreach ([
+            ['student_points', 'student_id'],
+            ['sanctions', 'student_id'],
+            ['school_notifications', 'user_id'],
+            ['news', 'author_id'],
+            ['attendances', 'student_id'],
+            ['courses', 'teacher_id'],
+            ['grades', 'student_id'],
+            ['messages', 'sender_id'],
+            ['lms_assignments', 'teacher_id'],
+        ] as [$table, $userColumn]) {
+            if (! DB::getSchemaBuilder()->hasTable($table) || ! DB::getSchemaBuilder()->hasColumn($table, 'school_id')) {
+                continue;
+            }
+
+            DB::statement("UPDATE {$table} target JOIN users u ON target.{$userColumn} = u.id SET target.school_id = u.school_id WHERE target.school_id IS NULL");
+            DB::table($table)->whereNull('school_id')->update(['school_id' => $schoolId]);
+        }
+
+        if (DB::getSchemaBuilder()->hasTable('lms_submissions') && DB::getSchemaBuilder()->hasColumn('lms_submissions', 'school_id')) {
+            DB::statement('UPDATE lms_submissions target JOIN lms_assignments a ON target.lms_assignment_id = a.id SET target.school_id = a.school_id WHERE target.school_id IS NULL');
+            DB::table('lms_submissions')->whereNull('school_id')->update(['school_id' => $schoolId]);
         }
     }
 }

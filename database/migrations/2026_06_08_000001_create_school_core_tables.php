@@ -47,6 +47,7 @@ class CreateSchoolCoreTables extends Migration
             $table->string('slug')->unique();
             $table->string('category')->default('Sekolah');
             $table->string('cover_color')->default('emerald');
+            $table->string('image_url')->nullable();
             $table->text('excerpt');
             $table->longText('content');
             $table->timestamp('published_at')->nullable();
@@ -83,6 +84,7 @@ class CreateSchoolCoreTables extends Migration
             $table->id();
             $table->foreignId('sender_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('receiver_id')->constrained('users')->cascadeOnDelete();
+            $table->string('category')->default('personal')->index();
             $table->text('body');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();

@@ -10,7 +10,8 @@ use App\Models\User;
 class CharacterSanctionService
 {
     public function __construct(
-        private FonnteService $fonnte
+        private FonnteService $fonnte,
+        private PdfSuratPanggilanService $pdfService
     ) {
     }
 
@@ -73,14 +74,33 @@ class CharacterSanctionService
 
         // Kirim notifikasi WhatsApp ke grup sekolah SETIAP KALI poin <= -30 (bukan cuma saat sanction baru)
         if ($type === 'Panggilan orang tua') {
-            $message = "⚠️ INFO PELANGGARAN SISWA ⚠️\n\n"
+            // Generate PDF Surat Panggilan Orang Tua
+            $pdfPath = $this->pdfService->generate($sanction);
+            $fullPdfPath = storage_path('app/public/' . $pdfPath);
+
+            // Simpan path PDF ke record sanction
+            $sanction->update(['pdf_path' => $pdfPath]);
+
+            $message = "⚠️ *INFO PELANGGARAN SISWA* ⚠️\n\n"
                 . "Nama Siswa: {$student->name}\n"
                 . "Total Poin: {$total}\n\n"
                 . "Siswa yang bersangkutan telah mencapai batas poin pelanggaran ({$total}). "
                 . "Sistem telah menerbitkan surat panggilan orang tua. "
-                . "Mohon Bapak/Ibu Wali Kelas untuk menindaklanjutinya.";
+                . "Mohon Bapak/Ibu Wali Kelas untuk menindaklanjutinya.\n\n"
+                . "📎 *Surat Panggilan Orang Tua* telah di-generate dan terlampir pada pesan ini.";
 
+            // Kirim pesan teks saja (sebagai backup jika file gagal)
             $this->fonnte->sendToGroup($message);
+
+            // Kirim file PDF (jika ada)
+            if (file_exists($fullPdfPath)) {
+                $pdfFilename = 'Surat_Panggilan_' . $student->name . '_' . date('Ymd') . '.pdf';
+                $this->fonnte->sendFileToGroup(
+                    "📄 Surat Panggilan Orang Tua - {$student->name}",
+                    $fullPdfPath,
+                    $pdfFilename
+                );
+            }
         }
 
         return $sanction;

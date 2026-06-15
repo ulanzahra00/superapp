@@ -55,17 +55,21 @@ class StudentImportController extends Controller
             return $this->normalizeHeader($value);
         }, $header);
 
-        $requiredHeaders = ['name', 'email', 'nis', 'class_name'];
+        $requiredHeaders = ['name', 'nis', 'class_name'];
         $missingHeaders = array_diff($requiredHeaders, $header);
 
         if ($missingHeaders) {
             return back()->withErrors([
-                'student_file' => 'Template tidak sesuai. Kolom wajib: '.implode(', ', $requiredHeaders).'.',
+                'student_file' => 'Template tidak sesuai. Kolom wajib: nama_siswa, nis, kelas.',
             ]);
         }
 
         $imported = 0;
         $skipped = [];
+        $seenEmails = [];
+        $schoolId = $request->user()->school_id;
+        $duplicateEmails = $this->duplicateEmails($rows, $header);
+        $passwordHashes = [];
         $rowNumber = 1;
 
         foreach ($rows as $row) {
@@ -80,15 +84,21 @@ class StudentImportController extends Controller
                 continue;
             }
 
+            if (! empty($data['password']) && strlen($data['password']) < 6) {
+                $data['password'] = 'password';
+            }
+
+            $data['class_name'] = $this->normalizeClassName($data['class_name'] ?? '');
+
             $validator = Validator::make($data, [
                 'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'max:255'],
+                'email' => ['nullable', 'email', 'max:255'],
                 'nis' => ['required', 'string', 'max:255'],
                 'class_name' => ['required', 'string', 'max:255'],
                 'parent_name' => ['nullable', 'string', 'max:255'],
                 'parent_email' => ['nullable', 'email', 'max:255'],
                 'phone' => ['nullable', 'string', 'max:50'],
-                'password' => ['nullable', 'string', 'min:6'],
+                'password' => ['nullable'],
             ]);
 
             if ($validator->fails()) {
@@ -96,29 +106,35 @@ class StudentImportController extends Controller
                 continue;
             }
 
+            $student = User::where('school_id', $schoolId)->where('nis', $data['nis'])->first();
+            $email = $this->resolveStudentEmail($data, $student, $seenEmails, $duplicateEmails, $schoolId);
+            $seenEmails[] = Str::lower($email);
+
             $parentId = null;
             if (! empty($data['parent_email'])) {
                 $parent = User::updateOrCreate(
                     ['email' => $data['parent_email']],
                     [
+                        'school_id' => $schoolId,
                         'name' => $data['parent_name'] ?: 'Orang Tua '.$data['name'],
                         'role' => 'orang_tua',
-                        'password' => Hash::make($data['password'] ?: 'password'),
+                        'password' => $this->passwordHash($data['password'] ?: 'password', $passwordHashes),
                     ]
                 );
                 $parentId = $parent->id;
             }
 
             User::updateOrCreate(
-                ['email' => $data['email']],
+                ['school_id' => $schoolId, 'nis' => $data['nis']],
                 [
+                    'school_id' => $schoolId,
                     'name' => $data['name'],
+                    'email' => $email,
                     'role' => 'siswa',
                     'parent_id' => $parentId,
-                    'nis' => $data['nis'],
                     'class_name' => $data['class_name'],
                     'phone' => $data['phone'] ?? null,
-                    'password' => Hash::make($data['password'] ?: 'password'),
+                    'password' => $this->passwordHash($data['password'] ?: 'password', $passwordHashes),
                 ]
             );
 
@@ -143,6 +159,7 @@ class StudentImportController extends Controller
         ]);
 
         $deleted = User::where('role', 'siswa')
+            ->where('school_id', $request->user()->school_id)
             ->whereIn('id', $data['student_ids'])
             ->delete();
 
@@ -160,6 +177,78 @@ class StudentImportController extends Controller
         }
 
         return $this->readCsvRows($path);
+    }
+
+    private function normalizeClassName($className)
+    {
+        $className = trim((string) $className);
+        $className = preg_replace('/\s+/', ' ', $className);
+
+        return preg_replace('/^Kelas\s+(\d+)\s*([A-Za-z])$/i', 'Kelas $1 $2', $className);
+    }
+
+    private function duplicateEmails(array $rows, array $header)
+    {
+        $emails = [];
+
+        foreach ($rows as $row) {
+            $row = array_pad($row, count($header), null);
+            $data = array_combine($header, array_slice($row, 0, count($header)));
+            $email = Str::lower(trim((string) ($data['email'] ?? '')));
+
+            if ($email !== '') {
+                $emails[$email] = ($emails[$email] ?? 0) + 1;
+            }
+        }
+
+        return array_keys(array_filter($emails, function ($count) {
+            return $count > 1;
+        }));
+    }
+
+    private function passwordHash($password, array &$passwordHashes)
+    {
+        $password = (string) $password;
+
+        if (! isset($passwordHashes[$password])) {
+            $passwordHashes[$password] = Hash::make($password);
+        }
+
+        return $passwordHashes[$password];
+    }
+
+    private function resolveStudentEmail(array $data, ?User $student, array $seenEmails, array $duplicateEmails, $schoolId)
+    {
+        $email = Str::lower((string) ($data['email'] ?? ''));
+
+        if ($email !== '' && ! in_array($email, $seenEmails, true) && ! in_array($email, $duplicateEmails, true)) {
+            $owner = User::where('email', $email)->first();
+
+            if (! $owner || ($student && $owner->id === $student->id)) {
+                return $email;
+            }
+        }
+
+        return $this->generateStudentEmail($data['nis'], $student ? $student->id : null, $schoolId);
+    }
+
+    private function generateStudentEmail($nis, $currentUserId = null, $schoolId = null)
+    {
+        $base = Str::slug((string) $nis) ?: 'siswa';
+        $schoolSuffix = $schoolId ? '.s'.$schoolId : '';
+        $email = 'siswa-'.$base.$schoolSuffix.'@sekolah.test';
+        $suffix = 2;
+
+        while (User::where('email', $email)
+            ->when($currentUserId, function ($query) use ($currentUserId) {
+                $query->where('id', '!=', $currentUserId);
+            })
+            ->exists()) {
+            $email = 'siswa-'.$base.'-'.$suffix.'@sekolah.test';
+            $suffix++;
+        }
+
+        return $email;
     }
 
     private function readCsvRows($path)
@@ -289,7 +378,7 @@ class StudentImportController extends Controller
         }
 
         return $html.'</tbody></table>
-    <p class="note">Isi data siswa mulai dari baris kosong di bawah contoh. Kolom nama_siswa, email_siswa, nis, dan kelas wajib diisi.</p>
+    <p class="note">Isi data siswa mulai dari baris kosong di bawah contoh. Kolom nama_siswa, nis, dan kelas wajib diisi. Email siswa boleh dikosongkan, sistem akan membuat email otomatis dari NIS.</p>
 </body>
 </html>';
     }

@@ -21,9 +21,11 @@
             @csrf
             <label class="text-sm font-semibold sm:col-span-2">Nama siswa
                 <select name="student_id" class="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3" required>
-                    @foreach($students as $student)
+                    @forelse($students as $student)
                         <option value="{{ $student->id }}">{{ $student->name }} - {{ $student->class_name }}</option>
-                    @endforeach
+                    @empty
+                        <option value="">Belum ada siswa dalam perwalian</option>
+                    @endforelse
                 </select>
             </label>
             <label class="text-sm font-semibold">Jenis

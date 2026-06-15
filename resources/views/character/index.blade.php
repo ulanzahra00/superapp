@@ -3,38 +3,99 @@
 @section('content')
 <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
-        <h2 class="text-lg font-bold">Rekap Karakter</h2>
-        <p class="text-sm text-slate-500">Hijau baik, kuning peringatan, merah bahaya.</p>
+        <h2 class="text-lg font-bold">Daftar Siswa dan Poin Karakter</h2>
+        <p class="text-sm text-slate-500">
+            @if(auth()->user()->role === 'guru' && auth()->user()->class_name)
+                Menampilkan siswa perwalian {{ auth()->user()->class_name }}.
+            @else
+                Menampilkan rekap poin, pelanggaran, prestasi, dan status siswa.
+            @endif
+        </p>
     </div>
     @if(auth()->user()->hasRole(['admin','guru']))
         <a href="{{ route('character.create') }}" class="btn-primary px-4 py-3 text-sm">Tambah Prestasi / Pelanggaran</a>
     @endif
 </div>
 
-<div class="mt-5 grid gap-4 lg:grid-cols-3">
-    @foreach($students as $student)
-        @php
-            $score = (int) ($student->total_points ?? 0);
-            $color = $score <= -100 ? 'rose' : ($score <= -20 ? 'amber' : 'emerald');
-            $label = $score <= -100 ? 'Bahaya' : ($score <= -20 ? 'Peringatan' : 'Baik');
-            $width = max(5, min(100, 50 + $score));
-        @endphp
-        <article class="surface rounded-xl p-5">
-            <div class="flex items-start justify-between gap-3">
-                <div>
-                    <h3 class="font-bold">{{ $student->name }}</h3>
-                    <p class="text-sm text-slate-500">{{ $student->class_name ?? 'Tanpa kelas' }}</p>
-                </div>
-                <span class="rounded-full bg-{{ $color }}-100 px-3 py-1 text-sm font-bold text-{{ $color }}-800">{{ $label }}</span>
-            </div>
-            <p class="mt-5 text-3xl font-bold">{{ $score }} <span class="text-sm font-semibold text-slate-500">poin</span></p>
-            <div class="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
-                <div class="h-full rounded-full bg-{{ $color }}-500" style="width: {{ $width }}%"></div>
-            </div>
-            <a href="{{ route('character.report', $student) }}" class="btn-soft mt-4 px-3 py-2 text-sm">Export laporan PDF</a>
-        </article>
-    @endforeach
-</div>
+<section class="surface mt-5 rounded-xl p-5">
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[980px] text-left text-sm">
+            <thead class="text-slate-500">
+                <tr>
+                    <th class="py-3">Siswa</th>
+                    <th>Kelas</th>
+                    <th>Total Poin</th>
+                    <th>Pelanggaran</th>
+                    <th>Pelanggaran Terakhir</th>
+                    <th>Prestasi</th>
+                     <th>Status</th>
+                     <th>Laporan</th>
+                     <th>Surat Panggilan</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-teal-100/80">
+                @forelse($students as $student)
+                    @php
+                        $score = (int) ($student->total_points ?? 0);
+                        $color = $score <= -100 ? 'rose' : ($score <= -20 ? 'amber' : 'emerald');
+                        $label = $score <= -100 ? 'Bahaya' : ($score <= -20 ? 'Peringatan' : 'Baik');
+                        $latestViolation = $student->relationLoaded('studentPoints')
+                            ? $student->studentPoints->firstWhere('type', 'pelanggaran')
+                            : null;
+                    @endphp
+                    <tr class="align-top">
+                        <td class="py-4">
+                            <p class="font-extrabold text-slate-900">{{ $student->name }}</p>
+                            <p class="mt-1 text-xs font-semibold text-slate-500">NIS: {{ $student->nis ?? '-' }}</p>
+                        </td>
+                        <td class="py-4 font-semibold text-slate-700">{{ $student->class_name ?? 'Tanpa kelas' }}</td>
+                        <td class="py-4">
+                            <span class="{{ $score < 0 ? 'text-rose-700' : 'text-emerald-700' }} text-xl font-extrabold">{{ $score }}</span>
+                            <span class="text-xs font-semibold text-slate-500">poin</span>
+                        </td>
+                        <td class="py-4">
+                            <span class="rounded-full bg-rose-50 px-3 py-1 text-sm font-extrabold text-rose-700">{{ $student->violation_count ?? 0 }}</span>
+                        </td>
+                        <td class="py-4">
+                            @if($latestViolation)
+                                <p class="font-bold text-slate-800">{{ $latestViolation->title }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ $latestViolation->occurred_at->format('d M Y') }} / {{ $latestViolation->point }} poin</p>
+                            @else
+                                <span class="text-slate-400">Tidak ada</span>
+                            @endif
+                        </td>
+                        <td class="py-4">
+                            <span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-extrabold text-emerald-700">{{ $student->achievement_count ?? 0 }}</span>
+                        </td>
+                        <td class="py-4">
+                            <span class="rounded-full bg-{{ $color }}-100 px-3 py-1 text-sm font-bold text-{{ $color }}-800">{{ $label }}</span>
+                        </td>
+                        <td class="py-4">
+                            <a href="{{ route('character.report', $student) }}" class="btn-soft px-3 py-2 text-xs">PDF</a>
+                        </td>
+                        <td class="py-4">
+                            @php
+                                $studentSanc = $studentSanctions->get($student->id);
+                                $panggilanSanc = $studentSanc ? $studentSanc->firstWhere('sanction_type', 'Panggilan orang tua') : null;
+                            @endphp
+                            @if($panggilanSanc && $panggilanSanc->pdf_path)
+                                <a href="{{ route('character.surat-panggilan.download', $panggilanSanc) }}" class="btn-soft px-3 py-2 text-xs text-amber-700">
+                                    📄 SP
+                                </a>
+                            @else
+                                <span class="text-xs text-slate-400">-</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="9" class="py-6 text-center font-semibold text-slate-500">Belum ada siswa yang sesuai.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</section>
 
 <div class="mt-6 grid gap-6 xl:grid-cols-[1.4fr_.6fr]">
     <section class="surface rounded-xl p-5">

@@ -11,6 +11,7 @@ class StudentPoint extends Model
 
     protected $fillable = [
         'student_id',
+        'school_id',
         'teacher_id',
         'type',
         'category',

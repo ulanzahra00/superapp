@@ -9,7 +9,7 @@ class Attendance extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['student_id', 'date', 'status'];
+    protected $fillable = ['school_id', 'student_id', 'date', 'status'];
 
     protected $casts = ['date' => 'date'];
 

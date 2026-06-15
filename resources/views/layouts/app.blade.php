@@ -166,15 +166,83 @@
             transform: translateY(-1px);
             background-color: #f0fdfa;
         }
+
+        details[data-mobile-menu] summary::-webkit-details-marker {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            main,
+            section,
+            article,
+            form,
+            .surface {
+                min-width: 0;
+            }
+
+            .overflow-x-auto {
+                max-width: 100%;
+            }
+
+            table {
+                min-width: 100% !important;
+                table-layout: auto;
+            }
+
+            th,
+            td {
+                padding: .65rem .5rem !important;
+                font-size: .72rem;
+                line-height: 1.35;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                vertical-align: top;
+            }
+
+            th:first-child,
+            td:first-child {
+                padding-left: .65rem !important;
+            }
+        }
     </style>
 </head>
 <body class="text-ink antialiased">
+    @include('partials.single-tab-guard')
     @auth
+        @php
+            $frontHomeRoute = auth()->user()->school
+                ? route('public.school.home', ['schoolSlug' => auth()->user()->school->public_slug])
+                : route('public.home');
+            $mobileNavLinks = [
+                ['Home', 'dashboard', 'dashboard'],
+                ['Berita', 'news.index', 'news.*'],
+                ['Notifikasi', 'notifications', 'notifications'],
+            ];
+
+            if (auth()->user()->hasRole('admin')) {
+                $mobileNavLinks[] = ['User', 'admin.users.index', 'admin.users.*'];
+            }
+
+            if (auth()->user()->hasRole('super_admin')) {
+                $mobileNavLinks[] = ['Sekolah', 'admin.schools.index', 'admin.schools.*'];
+            }
+
+            $headerActionLinks = [];
+
+            if (auth()->user()->hasRole('admin')) {
+                $headerActionLinks[] = ['Pengaturan User', 'admin.users.index'];
+            }
+
+            if (auth()->user()->hasRole('super_admin')) {
+                $headerActionLinks[] = ['Verifikasi Sekolah', 'admin.schools.index'];
+            }
+        @endphp
         <div class="min-h-screen lg:flex">
             <aside class="app-sidebar hidden lg:flex lg:w-72 lg:flex-col border-r border-teal-100/80">
                 <div class="px-6 py-6">
                     <div class="text-xl font-extrabold tracking-tight text-ocean">Super App Sekolah</div>
                     <div class="mt-2 inline-flex rounded-full bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</div>
+                    <a href="{{ $frontHomeRoute }}" class="btn-soft mt-4 w-full px-4 py-2 text-sm">Panel Depan</a>
                 </div>
                 <nav class="flex-1 px-4 space-y-1">
                     @include('partials.nav-links')
@@ -183,19 +251,48 @@
 
             <main class="min-w-0 flex-1 pb-24 lg:pb-0">
                 <header class="sticky top-0 z-20 border-b border-teal-100 bg-white/85 backdrop-blur-xl">
-                    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-                        <div>
+                    <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+                        <div class="min-w-0">
                             <p class="text-sm font-bold text-brand">{{ $eyebrow ?? 'Monitoring Sekolah' }}</p>
                             <h1 class="text-xl font-extrabold tracking-tight sm:text-2xl">{{ $title ?? 'Dashboard' }}</h1>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <a href="{{ route('notifications') }}" class="btn-soft rounded-full px-3 py-2 text-sm">Notifikasi</a>
-                            <a href="{{ route('profile') }}" class="hidden rounded-full bg-gradient-to-r from-emerald-100 to-teal-50 px-3 py-2 text-sm font-bold text-ocean ring-1 ring-emerald-200/70 sm:block">{{ auth()->user()->name }}</a>
-                            <form method="post" action="{{ route('logout') }}">
+                        <div class="hidden lg:flex lg:w-auto lg:flex-wrap lg:items-center lg:justify-end lg:gap-3">
+                            @foreach($headerActionLinks as [$label, $route])
+                                <a href="{{ route($route) }}" class="btn-primary min-w-0 px-3 py-2 text-center text-xs sm:text-sm">{{ $label }}</a>
+                            @endforeach
+                            <a href="{{ $frontHomeRoute }}" class="btn-soft min-w-0 px-3 py-2 text-center text-xs sm:text-sm">Panel Depan</a>
+                            <a href="{{ route('notifications') }}" class="btn-soft min-w-0 px-3 py-2 text-center text-xs sm:text-sm">Notifikasi</a>
+                            <a href="{{ route('profile') }}" class="min-w-0 truncate rounded-lg bg-gradient-to-r from-emerald-100 to-teal-50 px-3 py-2 text-center text-xs font-bold text-ocean ring-1 ring-emerald-200/70 sm:max-w-44 sm:rounded-full sm:text-sm">{{ auth()->user()->name }}</a>
+                            <form method="post" action="{{ route('logout') }}" class="min-w-0">
                                 @csrf
-                                <button class="btn-dark rounded-full px-4 py-2 text-sm">Keluar</button>
+                                <button class="btn-dark w-full px-3 py-2 text-xs sm:text-sm">Keluar</button>
                             </form>
                         </div>
+                        <details data-mobile-menu class="relative lg:hidden">
+                            <summary class="btn-primary flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm">
+                                <span>Menu Aplikasi</span>
+                                <span class="text-base leading-none">+</span>
+                            </summary>
+                            <div class="absolute right-0 top-full z-40 mt-3 max-h-[70vh] w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-teal-100 bg-white p-3 shadow-[0_24px_60px_rgba(15,61,94,.20)]">
+                                <p class="px-2 pb-2 text-xs font-extrabold uppercase tracking-wide text-brand">Tab utama</p>
+                                <nav class="grid grid-cols-2 gap-2">
+                                    @include('partials.nav-links', ['isMobileNav' => true])
+                                </nav>
+
+                                <div class="mt-3 border-t border-teal-100 pt-3">
+                                    <p class="px-2 pb-2 text-xs font-extrabold uppercase tracking-wide text-brand">Akun</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <a href="{{ $frontHomeRoute }}" class="btn-soft min-w-0 px-3 py-2 text-center text-xs">Panel Depan</a>
+                                        <a href="{{ route('notifications') }}" class="btn-soft min-w-0 px-3 py-2 text-center text-xs">Notifikasi</a>
+                                        <a href="{{ route('profile') }}" class="min-w-0 truncate rounded-lg bg-gradient-to-r from-emerald-100 to-teal-50 px-3 py-2 text-center text-xs font-bold text-ocean ring-1 ring-emerald-200/70">{{ auth()->user()->name }}</a>
+                                        <form method="post" action="{{ route('logout') }}" class="min-w-0">
+                                            @csrf
+                                            <button class="btn-dark w-full px-3 py-2 text-xs">Keluar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                 </header>
 
@@ -208,13 +305,80 @@
             </main>
 
             <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-teal-100 bg-white/95 shadow-[0_-12px_30px_rgba(15,61,94,.10)] backdrop-blur lg:hidden">
-                <div class="grid grid-cols-4 text-center text-xs font-semibold">
-                    <a class="mobile-tab py-3 {{ request()->routeIs('dashboard') ? 'text-brand' : 'text-slate-500' }}" href="{{ route('dashboard') }}">Home</a>
-                    <a class="mobile-tab py-3 {{ request()->routeIs('news.*') ? 'text-brand' : 'text-slate-500' }}" href="{{ route('news.index') }}">Berita</a>
-                    <a class="mobile-tab py-3 {{ request()->routeIs('notifications') ? 'text-brand' : 'text-slate-500' }}" href="{{ route('notifications') }}">Notifikasi</a>
-                    <a class="mobile-tab py-3 {{ request()->routeIs('profile') ? 'text-brand' : 'text-slate-500' }}" href="{{ route('profile') }}">Profil</a>
+                <div class="grid grid-cols-{{ count($mobileNavLinks) + 1 }} text-center text-[11px] font-semibold sm:text-xs">
+                    @foreach($mobileNavLinks as [$label, $route, $activePattern])
+                        <a class="mobile-tab truncate px-1 py-3 {{ request()->routeIs($activePattern) ? 'text-brand' : 'text-slate-500' }}" href="{{ route($route) }}">{{ $label }}</a>
+                    @endforeach
+                    <a class="mobile-tab truncate px-1 py-3 text-slate-500" href="{{ $frontHomeRoute }}">Depan</a>
                 </div>
             </nav>
+
+            @if(!empty($incomingMessagePopups) && $incomingMessagePopups->isNotEmpty())
+                <div id="incoming-message-popup" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm">
+                    <div class="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-teal-100 bg-white shadow-[0_26px_70px_rgba(15,23,42,.24)]">
+                        <div class="rounded-t-2xl bg-gradient-to-r from-emerald-50 to-teal-50 px-5 py-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-xs font-extrabold uppercase tracking-wide text-brand">Pemberitahuan masuk</p>
+                                    <h2 class="mt-1 text-xl font-extrabold text-ink">Ada pesan yang perlu dibaca</h2>
+                                </div>
+                                <button type="button" data-close-message-popup class="rounded-full border border-teal-100 bg-white px-3 py-1 text-sm font-extrabold text-slate-500 hover:text-ink">
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 px-5 py-5">
+                            @foreach($incomingMessagePopups as $messagePopup)
+                                <div class="rounded-xl border {{ $messagePopup['eyebrow'] === 'Pengumuman sekolah' ? 'border-amber-200 bg-amber-50/80' : 'border-emerald-100 bg-emerald-50/70' }} px-4 py-3">
+                                    <div class="flex flex-wrap items-start justify-between gap-2">
+                                        <div>
+                                            <p class="text-xs font-extrabold uppercase tracking-wide {{ $messagePopup['eyebrow'] === 'Pengumuman sekolah' ? 'text-amber-700' : 'text-brand' }}">
+                                                {{ $messagePopup['eyebrow'] }}
+                                            </p>
+                                            <p class="mt-1 text-sm font-bold text-ocean">
+                                                {{ $messagePopup['count'] }} {{ $messagePopup['title'] }}
+                                            </p>
+                                        </div>
+                                        <span class="rounded-full bg-white/80 px-3 py-1 text-xs font-extrabold text-slate-600">
+                                            {{ optional($messagePopup['latest']->sender)->name ?? 'Pengirim' }}
+                                        </span>
+                                    </div>
+
+                                    <p class="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600" style="text-align: justify;">
+                                        {{ $messagePopup['latest']->body }}
+                                    </p>
+                                    <p class="mt-2 text-xs font-semibold text-slate-500">
+                                        {{ $messagePopup['latest']->created_at->diffForHumans() }}
+                                    </p>
+
+                                    @if($messagePopup['count'] > 1)
+                                        <div class="mt-3 rounded-lg border border-white/70 bg-white/60 px-3 py-2 text-sm font-semibold text-slate-700">
+                                            Ada {{ $messagePopup['count'] - 1 }} {{ $messagePopup['note'] }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <a href="{{ route('communication') }}" class="btn-primary px-4 py-3 text-sm">Buka Pesan</a>
+                                <button type="button" data-close-message-popup class="btn-soft px-4 py-3 text-sm">Nanti</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    document.querySelectorAll('[data-close-message-popup]').forEach(function (button) {
+                        button.addEventListener('click', function () {
+                            var popup = document.getElementById('incoming-message-popup');
+                            if (popup) {
+                                popup.remove();
+                            }
+                        });
+                    });
+                </script>
+            @endif
         </div>
     @else
         @yield('content')

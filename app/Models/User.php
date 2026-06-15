@@ -18,6 +18,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'school_id',
         'name',
         'email',
         'role',
@@ -52,6 +53,11 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'parent_id');
     }
 
+    public function school()
+    {
+        return $this->belongsTo(School::class);
+    }
+
     public function children()
     {
         return $this->hasMany(User::class, 'parent_id');
@@ -72,6 +78,11 @@ class User extends Authenticatable
         return $this->hasMany(SchoolNotification::class);
     }
 
+    public function grades()
+    {
+        return $this->hasMany(Grade::class, 'student_id');
+    }
+
     public function characterScore()
     {
         return (int) $this->studentPoints()->sum('point');
@@ -80,5 +91,10 @@ class User extends Authenticatable
     public function hasRole($roles)
     {
         return in_array($this->role, (array) $roles, true);
+    }
+
+    public function scopeForSchool($query, $schoolId)
+    {
+        return $query->where('school_id', $schoolId);
     }
 }

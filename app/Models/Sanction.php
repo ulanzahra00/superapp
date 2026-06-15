@@ -11,9 +11,11 @@ class Sanction extends Model
 
     protected $fillable = [
         'student_id',
+        'school_id',
         'total_points',
         'sanction_type',
         'note',
+        'pdf_path',
     ];
 
     public function student()

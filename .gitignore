@@ -15,3 +15,8 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+*.sql
+*.zip
+/exports
+deploy-test/
+deploy-package/

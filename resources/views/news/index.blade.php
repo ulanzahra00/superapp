@@ -13,11 +13,15 @@
 <div class="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
     @foreach($news as $item)
         <article class="surface overflow-hidden rounded-2xl">
-            <div class="h-32 bg-{{ $item->cover_color }}-500"></div>
+            @if($item->image_url)
+                <img src="{{ $item->image_url }}" alt="{{ $item->title }}" class="h-32 w-full object-cover">
+            @else
+                <div class="h-32 bg-{{ $item->cover_color }}-500"></div>
+            @endif
             <div class="p-5">
                 <p class="text-sm font-bold text-brand">{{ $item->category }}</p>
                 <h3 class="mt-2 text-lg font-bold">{{ $item->title }}</h3>
-                <p class="mt-2 text-sm text-slate-500">{{ $item->excerpt }}</p>
+                <p class="mt-2 text-justify text-sm text-slate-500">{{ $item->excerpt }}</p>
                 <a href="{{ route('news.show', $item) }}" class="mt-4 inline-flex text-sm font-bold text-slate-900">Baca detail</a>
             </div>
         </article>

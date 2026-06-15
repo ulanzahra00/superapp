@@ -10,6 +10,7 @@ class SchoolNotification extends Model
     use HasFactory;
 
     protected $fillable = [
+        'school_id',
         'user_id',
         'title',
         'message',
