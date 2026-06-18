@@ -88,10 +88,17 @@ class DashboardController extends Controller
             })->values()
             : collect();
 
+        $followedUpStudentIds = Sanction::whereIn('student_id', $studentIds)
+            ->whereNotNull('followed_up_at')
+            ->pluck('student_id')
+            ->unique()
+            ->toArray();
+
         return view('dashboard', [
             'stats' => $stats,
             'students' => $students,
             'followUpStudents' => $followUpStudents,
+            'followedUpStudentIds' => $followedUpStudentIds,
             'recentPoints' => StudentPoint::with(['student', 'teacher'])
                 ->where('school_id', $schoolId)
                 ->when($user->role !== 'admin', function ($query) use ($studentIds) {
@@ -144,6 +151,12 @@ class DashboardController extends Controller
                 'read_at' => null,
             ]);
         });
+
+        // Tandai sanksi terbaru sebagai sudah ditindak lanjuti
+        $latestSanction = $student->sanctions()->latest()->first();
+        if ($latestSanction) {
+            $latestSanction->update(['followed_up_at' => now()]);
+        }
 
         return redirect()->route('dashboard')->with('status', 'Respons tindak lanjut berhasil dikirim ke siswa'.($student->parent_id ? ' dan orang tua.' : '.'));
     }

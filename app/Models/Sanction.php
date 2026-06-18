@@ -16,6 +16,11 @@ class Sanction extends Model
         'sanction_type',
         'note',
         'pdf_path',
+        'followed_up_at',
+    ];
+
+    protected $casts = [
+        'followed_up_at' => 'datetime',
     ];
 
     public function student()

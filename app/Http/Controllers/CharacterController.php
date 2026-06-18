@@ -51,6 +51,13 @@ class CharacterController extends Controller
         // Map sanksi per siswa untuk quick access di view
         $studentSanctions = $sanctions->groupBy('student_id');
 
+        // Kumpulkan ID siswa yang memiliki sanksi sudah ditindak lanjuti (followed_up_at terisi)
+        $followedUpStudentIds = Sanction::whereIn('student_id', $studentIds)
+            ->whereNotNull('followed_up_at')
+            ->pluck('student_id')
+            ->unique()
+            ->toArray();
+
         return view('character.index', [
             'students' => $students,
             'points' => StudentPoint::with(['student', 'teacher'])
@@ -59,6 +66,7 @@ class CharacterController extends Controller
                 ->paginate(10),
             'sanctions' => $sanctions,
             'studentSanctions' => $studentSanctions,
+            'followedUpStudentIds' => $followedUpStudentIds,
         ]);
     }
 
@@ -139,6 +147,33 @@ class CharacterController extends Controller
 
         $filename = 'Surat_Panggilan_OrangTua_' . $student->name . '_' . date('Ymd') . '.pdf';
         return response()->download($fullPath, $filename);
+    }
+
+    public function destroyPoint(Request $request, StudentPoint $point)
+    {
+        $user = $request->user();
+        $student = $point->student;
+
+        // Validasi akses: hanya admin/guru di sekolah yang sama
+        abort_unless($user->hasRole(['admin', 'guru']), 403);
+        abort_unless($student->school_id === $user->school_id, 403);
+
+        // Jika guru, hanya boleh hapus point dari siswa perwaliannya
+        if ($user->role === 'guru') {
+            abort_unless($user->class_name && $student->class_name === $user->class_name, 403);
+        }
+
+        // Pastikan sanksi sudah ditindak lanjuti (followed_up_at terisi)
+        $latestSanction = $student->sanctions()->latest()->first();
+        abort_unless($latestSanction && $latestSanction->followed_up_at, 403, 'Sanksi belum ditindak lanjuti. Hapus point hanya diperbolehkan setelah tindak lanjut.');
+
+        $point->delete();
+
+        // Sinkronisasi ulang sanksi setelah point dihapus
+        $service = app(CharacterSanctionService::class);
+        $service->syncSanction($student);
+
+        return redirect()->back()->with('status', 'Point pelanggaran berhasil dihapus.');
     }
 
     private function visibleStudentsQuery(User $user)

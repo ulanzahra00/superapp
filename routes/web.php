@@ -107,6 +107,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/karakter-sanksi/{student}/laporan', [CharacterController::class, 'report'])->name('character.report');
     Route::get('/karakter-sanksi/surat-panggilan/{sanction}/download', [CharacterController::class, 'downloadSuratPanggilan'])
         ->name('character.surat-panggilan.download');
+    Route::delete('/karakter-sanksi/point/{point}', [CharacterController::class, 'destroyPoint'])
+        ->middleware('role:admin,guru')
+        ->name('character.point.destroy');
 
     Route::get('/berita-sekolah', [NewsController::class, 'index'])->name('news.index');
     Route::get('/berita-sekolah/tulis', [NewsController::class, 'create'])

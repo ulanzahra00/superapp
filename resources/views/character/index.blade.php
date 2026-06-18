@@ -103,10 +103,15 @@
         <div class="mt-4 overflow-x-auto">
             <table class="w-full min-w-[760px] text-left text-sm">
                 <thead class="text-slate-500">
-                    <tr><th class="py-3">Siswa</th><th>Jenis</th><th>Kategori</th><th>Poin</th><th>Deskripsi</th><th>Guru</th><th>Tanggal</th></tr>
+                    <tr><th class="py-3">Siswa</th><th>Jenis</th><th>Kategori</th><th>Poin</th><th>Deskripsi</th><th>Guru</th><th>Tanggal</th><th></th></tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @foreach($points as $point)
+                        @php
+                            $canDeletePoint = auth()->user()->hasRole(['admin','guru']) 
+                                && in_array($point->student_id, $followedUpStudentIds)
+                                && $point->type === 'pelanggaran';
+                        @endphp
                         <tr>
                             <td class="py-3 font-semibold">{{ $point->student->name }}</td>
                             <td>{{ ucfirst($point->type) }}</td>
@@ -115,6 +120,15 @@
                             <td>{{ $point->title }}</td>
                             <td>{{ optional($point->teacher)->name ?? '-' }}</td>
                             <td>{{ $point->occurred_at->format('d M Y') }}</td>
+                            <td>
+                                @if($canDeletePoint)
+                                    <form method="post" action="{{ route('character.point.destroy', $point) }}" onsubmit="return confirm('Hapus point pelanggaran ini?');">
+                                        @csrf
+                                        @method('delete')
+                                        <button class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-extrabold text-rose-700 transition hover:bg-rose-100">Hapus</button>
+                                    </form>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
